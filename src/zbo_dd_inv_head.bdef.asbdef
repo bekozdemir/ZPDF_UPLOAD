@@ -1,0 +1,55 @@
+managed implementation in class zbp_bo_dd_inv_head unique;
+//strict;
+with draft;
+
+define behavior for zbo_DD_INV_HEAD alias Invoice
+persistent table zbo_t_inv_hdr
+draft table zbo_t_d_inv_hdr
+lock master
+total etag LocalLastChangedAt
+authorization master ( global )
+etag master LastChangedAt
+{
+  create;
+  update;
+  delete;
+  association _Attachments { create; with draft; }
+
+  draft action Edit;
+  draft action Activate;
+  draft action Discard;
+  draft action Resume;
+  draft determine action Prepare;
+
+  mapping for zbo_t_inv_hdr{
+  Invoice = invoice;
+  Comments = comments;
+  VendorId = vendor_id;
+  LocalCreatedBy = local_created_by;
+  LocalLastChangedAt = local_last_changed_at;
+  LocalLastChangedBy =  local_last_changed_by;
+  LastChangedAt = last_changed_at;
+  }
+}
+
+define behavior for zbo_DD_INV_attach alias InvoiceAttachment
+persistent table ZBO_T_INV_ATT
+draft table ZBO_T_D_INV_ATT
+lock dependent by _Invoice
+authorization dependent by _Invoice
+etag master LastChangedAt
+{
+  update;
+  delete;
+  field ( readonly ) Invoice;
+  association _Invoice {with draft;}
+
+  mapping for ZBO_T_INV_ATT{
+    Invoice = invoice;
+    Comments = comments;
+    Attachment = attachment;
+    AttachmentId = attachment_id;
+    Filename = filename;
+    Mimetype = mimetype;
+  }
+}
